@@ -12,3 +12,8 @@ func envExist(env string) (result bool) {
 	}
 	return
 }
+
+func envExist2(env string) (result bool) {
+	_, result = os.LookupEnv(env)
+	return
+}
