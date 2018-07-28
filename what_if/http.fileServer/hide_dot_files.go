@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+type myFile struct {
+	http.File
+}
+
+func (f myFile) Readdir(n int) ([]os.FileInfo, error) {
+	files, err := f.File.Readdir(n)
+	return files, err
+}
+
 type myFileSystem struct {
 	http.FileSystem
 }
@@ -31,7 +40,7 @@ func (fs myFileSystem) Open(name string) (http.File, error) {
 		return file, os.ErrPermission
 	}
 
-	return file, err
+	return myFile{file}, err
 }
 
 func main() {
