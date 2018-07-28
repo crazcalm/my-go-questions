@@ -14,9 +14,7 @@ type myFile struct {
 
 func (f myFile) Readdir(n int) (wantedFiles []os.FileInfo, err error) {
 	files, err := f.File.Readdir(n)
-	fmt.Println("files:")
-	for i, file := range files {
-		fmt.Printf("%d. %s\n", i, file.Name())
+	for _, file := range files {
 		if !strings.HasPrefix(file.Name(), ".") {
 			wantedFiles = append(wantedFiles, file)
 		}
@@ -41,7 +39,7 @@ func isDotFile(name string) (result bool) {
 }
 
 func (fs myFileSystem) Open(name string) (http.File, error) {
-	fmt.Printf("name: %s\n", name)
+	fmt.Printf("myFileSystem Open(%s)\n", name)
 	file, err := fs.FileSystem.Open(name)
 
 	if isDotFile(name) {
