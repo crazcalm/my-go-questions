@@ -12,9 +12,17 @@ type myFile struct {
 	http.File
 }
 
-func (f myFile) Readdir(n int) ([]os.FileInfo, error) {
+func (f myFile) Readdir(n int) (wantedFiles []os.FileInfo, err error) {
 	files, err := f.File.Readdir(n)
-	return files, err
+	fmt.Println("files:")
+	for i, file := range files {
+		fmt.Printf("%d. %s\n", i, file.Name())
+		if !strings.HasPrefix(file.Name(), ".") {
+			wantedFiles = append(wantedFiles, file)
+		}
+	}
+
+	return
 }
 
 type myFileSystem struct {
