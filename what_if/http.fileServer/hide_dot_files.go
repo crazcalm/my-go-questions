@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -50,9 +52,46 @@ func (fs myFileSystem) Open(name string) (http.File, error) {
 	return myFile{file}, err
 }
 
+func exitError(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	os.Exit(1)
+}
+
+func validPath(path string) {
+	_, err := os.Stat(path)
+	if err != nil {
+		exitError(fmt.Errorf("Could not validate path: %s", err.Error()))
+	}
+}
+
+func validPort(port string) {
+	_, err := strconv.Atoi(port)
+	if err != nil {
+		exitError(fmt.Errorf("Could not confirm that the passed in port was a number: %s", err.Error()))
+	}
+}
+
+var filePath = flag.String("directory", os.Getenv("HOME"), "File directory to be served")
+var showDotFiles = flag.Bool("dotfiles", false, "Show dot files")
+var port = flag.String("port", "12345", "That port that will be used")
+
 func main() {
-	home := os.Getenv("HOME")
-	hideDotFileSystem := myFileSystem{http.Dir(home)}
-	http.Handle("/", http.FileServer(hideDotFileSystem))
-	log.Fatal(http.ListenAndServe(":12346", nil))
+	flag.Parse()
+
+	//Some validation
+	validPath(*filePath)
+	validPort(*port)
+
+	home := *filePath
+	if *showDotFiles {
+		http.Handle("/", http.FileServer(http.Dir(home)))
+	} else {
+		hideDotFileSystem := myFileSystem{http.Dir(home)}
+		http.Handle("/", http.FileServer(hideDotFileSystem))
+	}
+
+	//Let the user know where the server is
+	fmt.Printf("Now serving on http://localhost:%s\n", *port)
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", *port), nil))
 }
