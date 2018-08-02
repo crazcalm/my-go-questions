@@ -41,14 +41,12 @@ func isDotFile(name string) (result bool) {
 	return
 }
 
-func (fs myFileSystem) Open(name string) (http.File, error) {
+func (fs myFileSystem) Open(name string) (file http.File, err error) {
 	fmt.Printf("myFileSystem Open(%s)\n", name)
-	file, err := fs.FileSystem.Open(name)
-
 	if isDotFile(name) { //If dot file return 403 response
 		return file, os.ErrPermission
 	}
-
+	file, err = fs.FileSystem.Open(name)
 	return myFile{file}, err
 }
 
